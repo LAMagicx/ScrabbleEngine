@@ -180,9 +180,9 @@ class ScrabbleBoard:
         """Checks if coordinates are within the board bounds."""
         return 0 <= x < BOARD_SIZE and 0 <= y < BOARD_SIZE
 
-    def place_tile(self, x: int, y: int, tile: str):
+    def place_tile(self, x: int, y: int, tile: str, force: bool = False):
         """Places a tile (uppercase string) on the board."""
-        if not self._is_empty_square(x, y):
+        if not self._is_empty_square(x, y) and not force:
             return False
         if not isinstance(tile, str) or len(tile) != 1 or not tile.isalpha():
             return False
@@ -363,6 +363,48 @@ class ScrabbleBoard:
                 print(f" {tile} ", end="")
             print("|")
         print("   ", "-" * (BOARD_SIZE * 3 - 1))
+
+    def to_gcp(self) -> str:
+        output = ""
+        for j in range(BOARD_SIZE):
+            count = 0
+            for i in range(BOARD_SIZE):
+                tile = self.get_tile(i, j)
+                if tile == EMPTY_CHAR:
+                    count += 1
+                else:
+                    if count > 0:
+                        output += str(count)
+                    output += str(tile)
+                    count = 0
+            if count == 15:
+                output += "15"
+            if j < BOARD_SIZE - 1:
+                if count > 0:
+                    output += str(count)
+                output += '/'
+        return output
+    
+    def from_gcp(self, gcp: str, force: bool = True):
+        row_index = 0
+        col_index = 0
+        for i in range(len(gcp)):
+            if gcp[i] == '/':
+                row_index += 1
+                col_index = 0
+                continue
+
+            if gcp[i].isdigit():
+                if i < len(gcp) - 1 and gcp[i + 1].isdigit():
+                    count = int(gcp[i:i + 2])
+                else:
+                    count = int(gcp[i])
+                for _ in range(count):
+                    self.place_tile(col_index, row_index, EMPTY_CHAR, force=force)
+                    col_index += 1
+            else:
+                self.place_tile(col_index, row_index, gcp[i], force=force)
+                col_index += 1
 
 class ScrabbleBag:
     def __init__(self):
