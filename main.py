@@ -483,6 +483,9 @@ class Rack:
     def copy(self):
         return Rack(self.bag, self.tiles)
 
+    def to_gcp(self) -> str:
+        return self.tiles
+
 def valid_placement(board: ScrabbleBoard, x: int, y: int, letter: str) -> bool:
     return True
 
@@ -754,5 +757,18 @@ class ScrabbleGame:
             self.scores[end_player_index] += points_left
 
         print(self.scores)
+
+    def to_gcp(self) -> str:
+        board = self.board.to_gcp()
+        rack = "/".join([self.racks[i].to_gcp() for i in range(self.number_of_players)])
+        scores = "/".join([str(self.scores[i]) for i in range(self.number_of_players)])
+        return f"{board} {rack} {scores}"
+
+    def from_gcp(self, gcp: str):
+        board, rack, scores = gcp.split(' ')
+        self.board.from_gcp(board)
+        self.racks = [Rack(self.bag, tiles=tiles) for tiles in rack.split('/')]
+        self.scores = [int(s) for s in scores.split('/')]
+
 
 
