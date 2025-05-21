@@ -380,7 +380,7 @@ class ScrabbleBoard:
             if count == 15:
                 output += "15"
             if j < BOARD_SIZE - 1:
-                if count > 0:
+                if count > 0 and count < 15:
                     output += str(count)
                 output += '/'
         return output
@@ -388,15 +388,18 @@ class ScrabbleBoard:
     def from_gcp(self, gcp: str, force: bool = True):
         row_index = 0
         col_index = 0
-        for i in range(len(gcp)):
+        i = 0
+        while i < len(gcp):
             if gcp[i] == '/':
                 row_index += 1
                 col_index = 0
+                i += 1
                 continue
 
             if gcp[i].isdigit():
                 if i < len(gcp) - 1 and gcp[i + 1].isdigit():
                     count = int(gcp[i:i + 2])
+                    i += 1
                 else:
                     count = int(gcp[i])
                 for _ in range(count):
@@ -405,6 +408,7 @@ class ScrabbleBoard:
             else:
                 self.place_tile(col_index, row_index, gcp[i], force=force)
                 col_index += 1
+            i += 1
 
 class ScrabbleBag:
     def __init__(self):
